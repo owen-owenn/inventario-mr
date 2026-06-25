@@ -1,7 +1,7 @@
 <?php
 $servidor = "shinkansen.proxy.rlwy.net";
 $usuario = "root";
-$password = "PEGAR_AQUI_TU_CONTRASEÑA_DE_RAILWAY"; // <-- Pon tu contraseña real aquí
+$password = "IAysjpnhHovoOajGxXLrYYpkFDPxHsXl"; 
 $base_datos = "railway";
 $puerto = 30900;
 
