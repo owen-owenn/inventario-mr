@@ -1,3 +1,53 @@
+<?php
+session_start();
+
+// 🔒 AQUÍ ESCRIBES LA CONTRASEÑA QUE QUIERES PEDIR
+$contrasena_secreta = "chispon321"; 
+
+$error = "";
+if (isset($_POST['clave'])) {
+    if ($_POST['clave'] === $contrasena_secreta) {
+        $_SESSION['acceso_concedido'] = true;
+    } else {
+        $error = "❌ Contraseña incorrecta. Intenta de nuevo.";
+    }
+}
+
+// Si no ha puesto la contraseña, mostramos la pantalla de Login y bloqueamos el resto
+if (!isset($_SESSION['acceso_concedido']) || $_SESSION['acceso_concedido'] !== true) {
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Inventario M&R</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-box { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 320px; }
+        .login-box h2 { color: #004a99; margin-top: 0; font-weight: 900; }
+        .login-input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        .btn-login { background: #004a99; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-login:hover { background: #003366; transform: scale(1.02); }
+        .error { color: #d63031; font-size: 0.9rem; margin-bottom: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>📱 Inventario M&R</h2>
+        <p style="color: #666; font-size: 0.9rem;">Acceso Restringido al Personal</p>
+        <?php if($error != "") echo "<div class='error'>$error</div>"; ?>
+        <form method="POST">
+            <input type="password" name="clave" class="login-input" placeholder="Ingresa la contraseña..." required>
+            <button type="submit" class="btn-login">Entrar al Sistema</button>
+        </form>
+    </div>
+</body>
+</html>
+<?php
+    exit(); // 🛑 Este comando es la magia: detiene todo y protege tu código de abajo
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
