@@ -1,14 +1,12 @@
-FROM php:8.2-apache
+# Usar la versión ligera y nativa de PHP
+FROM php:8.2-cli
 
-# 1. Apagar módulos MPM conflictivos y asegurar el correcto
-RUN a2dismod mpm_event mpm_worker || true
-RUN a2enmod mpm_prefork
-
-# 2. Instalar extensiones para la Base de Datos
+# Instalar los conectores para tu base de datos
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# 3. Copiar los archivos del proyecto al servidor
-COPY . /var/www/html/
+# Copiar todo tu inventario al servidor
+COPY . /app
+WORKDIR /app
 
-# 4. Configurar el puerto dinámico de Railway
-RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
+# Arrancar el servidor nativo de PHP conectado directamente a Railway
+CMD php -S 0.0.0.0:$PORT
