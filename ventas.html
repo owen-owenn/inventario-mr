@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas - Equipos Móviles</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+    <div class="header-actions">
+        <a href="index.html" class="btn-volver">⬅ Cambiar Tienda</a>
+        
+        <div class="panel-reporte">
+            <span id="contador" style="font-weight: bold;">Ventas: 0</span>
+            <span id="totalVentas" style="font-weight: bold; color: var(--cab-color);">Total Ingresos: S/ 0</span>
+            <button class="btn-excel" onclick="descargarReporte()" style="background-color: #217346;">📊 Ventas</button>
+            <button class="btn-excel" onclick="descargarInventario()" style="background-color: #004a99;">📦 Inventario</button>
+        </div>
+    </div>
+
+    <h1 id="titulo-tienda">Inventario: Cargando...</h1>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <button onclick="abrirModal()" style="background: var(--accent-color); color: white; padding: 10px 20px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;">
+            ➕ Agregar Nuevo Equipo
+        </button>
+    </div>
+
+    <div id="modal-agregar" class="modal-oculto">
+        <div class="modal-contenido">
+            <span class="cerrar-modal" onclick="cerrarModal()">&times;</span>
+            <h2>Agregar Equipo a <span id="nombre-tienda-modal"></span></h2>
+            
+            <input type="text" id="n-marca" placeholder="Marca (ej. HONOR)" class="input-form">
+            <input type="text" id="n-nombre" placeholder="Nombre (ej. Honor 200)" class="input-form">
+            <input type="text" id="n-imei" placeholder="IMEI del equipo (15 dígitos)" class="input-form">
+            <input type="text" id="n-rom" placeholder="Almacenamiento (ej. 256GB)" class="input-form">
+            <input type="text" id="n-ram" placeholder="RAM (ej. 12)" class="input-form">
+            
+            <input type="number" id="n-precio-compra" placeholder="Precio de COMPRA (Costo S/)" class="input-form">
+            <input type="number" id="n-precio" placeholder="Precio de VENTA (S/)" class="input-form">
+            <input type="number" id="n-stock" placeholder="Stock Inicial" class="input-form">
+            
+            <button onclick="guardarNuevoEquipo()" class="btn-guardar">💾 Guardar en Inventario</button>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="buscador" class="search-bar" placeholder="🔍 Buscar por marca, modelo o IMEI..." onkeyup="filtrarEquipos()">
+    </div>
+
+    <div id="grid-equipos" class="grid-container"></div>
+
+    <script src="js/datos.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
