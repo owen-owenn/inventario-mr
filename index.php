@@ -1,6 +1,13 @@
 <?php
 session_start();
 
+// 🛑 Lógica para CERRAR SESIÓN manualmente
+if (isset($_GET['salir'])) {
+    session_destroy();
+    header("Location: index.php");
+    exit();
+}
+
 // 🔒 AQUÍ ESCRIBES LA CONTRASEÑA QUE QUIERES PEDIR
 $contrasena_secreta = "chispon321"; 
 
@@ -45,7 +52,7 @@ if (!isset($_SESSION['acceso_concedido']) || $_SESSION['acceso_concedido'] !== t
 </body>
 </html>
 <?php
-    exit(); // 🛑 Este comando es la magia: detiene todo y protege tu código de abajo
+    exit(); // 🛑 Este comando detiene todo y protege tu código de abajo
 }
 ?>
 <!DOCTYPE html>
@@ -114,6 +121,12 @@ if (!isset($_SESSION['acceso_concedido']) || $_SESSION['acceso_concedido'] !== t
 <body>
 
     <div class="app-container">
+        
+        <!-- 🚪 BOTÓN DE CERRAR SESIÓN -->
+        <div style="text-align: right; margin-bottom: -15px; margin-top: 10px;">
+            <a href="?salir=true" style="background: #d63031; color: white; padding: 10px 15px; text-decoration: none; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; transition: 0.3s;">🚪 Cerrar Sesión</a>
+        </div>
+
         <h1 style="text-align: center; color: #004a99; margin-bottom: 5px;">📱 Inventario M&R</h1>
         
         <div id="seccion-marcas">
