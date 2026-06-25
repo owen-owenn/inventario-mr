@@ -1,13 +1,14 @@
 <?php
-// Datos de conexión de InfinityFree
-$host = "sql100.infinityfree.com";
-$user = "if0_41626201";
-$pass = "6ADKu2NYrGoBj3"; // <-- OJO: Borra esto y pon la contraseña que copiaste antes
-$db   = "if0_41626201_ventas";
+$servidor = "shinkansen.proxy.rlwy.net";
+$usuario = "root";
+$password = "PEGAR_AQUI_TU_CONTRASEÑA_DE_RAILWAY"; // <-- Pon tu contraseña real aquí
+$base_datos = "railway";
+$puerto = 30900;
 
-$conexion = mysqli_connect($host, $user, $pass, $db);
+// Conexión a la base de datos de Railway
+$conn = mysqli_connect($servidor, $usuario, $password, $base_datos, $puerto);
 
-if (!$conexion) {
-    die("Error de conexión a la nube: " . mysqli_connect_error());
+if (!$conn) {
+    die("La conexión ha fallado: " . mysqli_connect_error());
 }
 ?>
