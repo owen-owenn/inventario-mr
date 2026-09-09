@@ -2,12 +2,49 @@ let ventas = [];
 let ingresoTotal = 0;
 let equiposInventario = [];
 let marcaSeleccionada = '';
+let coloresMarcasBD = {};
+let listaMarcasBD = [];
 
 function obtenerMarcaPrincipal(texto) {
     if (!texto) return "OTROS";
     let marcaLimpia = texto.trim().split(/\s+/)[0].toUpperCase();
     if (marcaLimpia === 'RETMI') marcaLimpia = 'REDMI';
     return marcaLimpia;
+}
+
+// 🚀 Nueva función de arranque para cargar TODO desde la BD
+async function inicializarApp() {
+    await cargarMarcasBD();
+    await cargarEquipos();
+}
+
+async function cargarMarcasBD() {
+    try {
+        const response = await fetch('api_marcas_obtener.php');
+        const data = await response.json();
+        coloresMarcasBD = {};
+        listaMarcasBD = [];
+        data.forEach(m => {
+            coloresMarcasBD[m.nombre] = m.color;
+            listaMarcasBD.push(m.nombre);
+        });
+        actualizarSelectMarcas();
+    } catch (e) {
+        console.error("Error al cargar marcas", e);
+    }
+}
+
+function actualizarSelectMarcas() {
+    const select = document.getElementById('n-marca');
+    if(!select) return;
+    select.innerHTML = '<option value="">-- Escoge la Marca --</option>';
+    
+    // Unimos marcas predeterminadas con las nuevas de la BD
+    const marcasFinales = [...new Set([...listaMarcasBD, 'HONOR', 'INFINIX', 'IPHONE', 'MOTOROLA', 'NEO', 'POCO', 'REDMI', 'SAMSUNG', 'ZTE'])].sort();
+    
+    marcasFinales.forEach(marca => {
+        select.innerHTML += `<option value="${marca}">${marca}</option>`;
+    });
 }
 
 async function cargarEquipos() {
@@ -29,9 +66,11 @@ function renderizarMarcas() {
     if(!contenedorMarcas) return; 
     contenedorMarcas.innerHTML = '';
 
-    const marcasUnicas = [...new Set(equiposInventario.map(e => obtenerMarcaPrincipal(e.marca)))].sort();
+    // Unimos los equipos que tienes en stock con las marcas vacías que hayas creado en la BD
+    const marcasUnicas = [...new Set([...equiposInventario.map(e => obtenerMarcaPrincipal(e.marca)), ...listaMarcasBD])].sort();
 
-    const coloresMarcas = {
+    // Colores por defecto para las que ya existían
+    const coloresDefecto = {
         'HONOR': '#0ea5e9', 'INFINIX': '#22c55e', 'IPHONE': '#ef4444',
         'MOTOROLA': '#3b82f6', 'POCO': '#eab308', 'REDMI': '#ea580c',
         'SAMSUNG': '#1d4ed8', 'ZTE': '#06b6d4', 'NEO': '#475569'
@@ -42,10 +81,11 @@ function renderizarMarcas() {
         btn.className = 'brand-btn';
         btn.innerText = marca;
         
-        const colorBase = coloresMarcas[marca] || '#94a3b8'; 
+        // El color ahora se busca primero en la BD, si no, usa el defecto
+        const colorBase = coloresMarcasBD[marca] || coloresDefecto[marca] || '#94a3b8'; 
         btn.style.backgroundColor = colorBase;
 
-        if(marca === 'POCO') {
+        if(marca === 'POCO' || colorBase === '#eab308') {
             btn.style.textShadow = 'none';
             btn.style.color = '#1e293b';
         }
@@ -77,7 +117,7 @@ function renderizarModelos(listaEquipos) {
     contenedor.innerHTML = ''; 
 
     if(listaEquipos.length === 0) {
-        contenedor.innerHTML = '<p style="text-align:center; padding: 20px;">No hay equipos para mostrar.</p>';
+        contenedor.innerHTML = '<p style="text-align:center; padding: 20px; font-weight: bold; color: #666;">Aún no hay equipos de esta marca en el stock.</p>';
         return;
     }
 
@@ -93,7 +133,6 @@ function renderizarModelos(listaEquipos) {
         const card = document.createElement('div');
         card.className = 'card-modelo';
         
-        // AQUÍ ESTÁ EL NUEVO BOTÓN DE BORRAR EN LA CABECERA DEL EQUIPO
         card.innerHTML = `
             <div class="model-header" style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-bottom: 10px;">
                 <div>
@@ -167,7 +206,6 @@ function renderizarModelos(listaEquipos) {
     });
 }
 
-// === NUEVA FUNCIÓN PARA ELIMINAR EQUIPO ===
 async function eliminarEquipo(idEquipo) {
     const confirmacion = confirm("⚠️ ¿Estás totalmente seguro de que quieres ELIMINAR este equipo de la base de datos? Esta acción no se puede deshacer.");
     if (!confirmacion) return;
@@ -181,10 +219,7 @@ async function eliminarEquipo(idEquipo) {
         
         if(res.success) {
             alert("🗑️ Equipo eliminado con éxito.");
-            // Recargamos el inventario desde cero para actualizar la pantalla
             cargarEquipos();
-            
-            // Si el usuario estaba viendo una marca, la cerramos para evitar errores gráficos
             if(marcaSeleccionada) {
                 volverAMarcas();
             }
@@ -252,7 +287,7 @@ async function modificarStock(id, columnaTienda, cambio) {
 async function registrarVenta(idEquipo) {
     const equipo = equiposInventario.find(e => e.id == idEquipo);
     
-    const opcion = prompt("¿De qué tienda se realizó la venta?\\nEscribe el número:\\n1 = CAB 1\\n2 = CAB 2\\n3 = MODELO");
+    const opcion = prompt("¿De qué tienda se realizó la venta?\nEscribe el número:\n1 = CAB 1\n2 = CAB 2\n3 = MODELO");
     if(!opcion) return; 
 
     let columnaTiendaDeducir = '';
@@ -290,7 +325,7 @@ async function registrarVenta(idEquipo) {
             if(document.getElementById('contador')) document.getElementById('contador').innerText = `Ventas: ${ventas.length}`;
             if(document.getElementById('totalVentas')) document.getElementById('totalVentas').innerText = `Total Ingresos: S/ ${ingresoTotal}`;
             
-            alert(`✅ Venta registrada.\\nGanancia: S/ ${gananciaReal}`);
+            alert(`✅ Venta registrada.\nGanancia: S/ ${gananciaReal}`);
             
             equipo[columnaTiendaDeducir] -= 1; 
             if (marcaSeleccionada) renderizarModelos(equiposInventario.filter(e => obtenerMarcaPrincipal(e.marca) === marcaSeleccionada));
@@ -312,8 +347,37 @@ function filtrarEquipos() {
     renderizarModelos(filtrados);
 }
 
+// === FUNCIONES DE LOS MODALES ===
 function abrirModal() { document.getElementById('modal-agregar').style.display = 'flex'; }
 function cerrarModal() { document.getElementById('modal-agregar').style.display = 'none'; }
+function abrirModalMarca() { document.getElementById('modal-marca').style.display = 'flex'; }
+function cerrarModalMarca() { document.getElementById('modal-marca').style.display = 'none'; }
+
+// 💾 FUNCIÓN PARA GUARDAR LA NUEVA MARCA EN LA BD
+async function guardarNuevaMarca() {
+    const nombre = document.getElementById('n-nueva-marca').value.trim().toUpperCase();
+    const color = document.getElementById('n-color-marca').value;
+
+    if(!nombre) return alert("Por favor, ingresa un nombre para la marca.");
+
+    try {
+        const response = await fetch('api_marcas_guardar.php', {
+            method: 'POST',
+            body: JSON.stringify({ nombre: nombre, color: color })
+        });
+        const res = await response.json();
+        if(res.success) {
+            alert("🎨 ¡Marca y color guardados con éxito!");
+            cerrarModalMarca();
+            document.getElementById('n-nueva-marca').value = '';
+            
+            // Recargamos el sistema para que aparezca el nuevo botón
+            await inicializarApp();
+        } else {
+            alert("Error al intentar guardar la marca.");
+        }
+    } catch (e) { alert("Error de conexión al guardar la marca."); }
+}
 
 async function guardarNuevoEquipo() {
     const nuevoEquipo = {
@@ -409,4 +473,5 @@ function descargarInventario() {
     XLSX.writeFile(workbook, `Reporte_Inventario_Imprimir.xlsx`);
 }
 
-cargarEquipos();
+// 🚀 ARRANCAMOS EL SISTEMA
+inicializarApp();
