@@ -35,7 +35,7 @@ $solicitud = bin2hex(random_bytes(32));
             </section>
             <section>
                 <h2><span>2</span> Forma de venta</h2>
-                <label>Tipo de venta<select id="tipo" name="tipo" required><option value="">Selecciona una opción</option value="contado">Contado</option><option value="credito">Crédito</option></select></label>
+                <label>Tipo de venta<select id="tipo" name="tipo" required><option value="">Selecciona una opción</option><option value="contado">Contado</option><option value="credito">Crédito</option></select></label>
                 <div id="contado" hidden class="grid">
                     <label>Precio al contado (S/)<input name="precio_contado" type="number" min="0.01" max="99999999.99" step="0.01" disabled></label>
                     <label>Descuento (S/) · opcional<input name="descuento_contado" type="number" min="0" max="99999999.99" step="0.01" placeholder="0.00" disabled></label>
