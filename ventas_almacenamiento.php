@@ -15,15 +15,15 @@ function ventas_reparar_almacenamiento(mysqli $conn): array {
         if ($motor === 'INNODB') continue;
         if ($motor !== 'MYISAM') throw new RuntimeException('Motor no compatible con la reparación automática.');
         $respaldo = $tabla . '_respaldo_' . gmdate('Ymd_His') . '_' . bin2hex(random_bytes(3));
-        $conn->query("CREATE TABLE \`$respaldo\` LIKE \`$tabla\`");
-        $conn->query("LOCK TABLES \`$tabla\` WRITE, \`$respaldo\` WRITE");
+        $conn->query("CREATE TABLE $respaldo LIKE $tabla");
+        $conn->query("LOCK TABLES $tabla WRITE, $respaldo WRITE");
         try {
-            $conn->query("INSERT INTO \`$respaldo\` SELECT * FROM \`$tabla\`");
-            $antes = (int)$conn->query("SELECT COUNT(*) FROM \`$tabla\`")->fetch_row()[0];
-            $copiados = (int)$conn->query("SELECT COUNT(*) FROM \`$respaldo\`")->fetch_row()[0];
+            $conn->query("INSERT INTO $respaldo SELECT * FROM $tabla");
+            $antes = (int)$conn->query("SELECT COUNT(*) FROM $tabla")->fetch_row()[0];
+            $copiados = (int)$conn->query("SELECT COUNT(*) FROM $respaldo")->fetch_row()[0];
             if ($antes !== $copiados) throw new RuntimeException('El respaldo no coincide. Conversión cancelada.');
-            $conn->query("ALTER TABLE \`$tabla\` ENGINE=InnoDB");
-            $despues = (int)$conn->query("SELECT COUNT(*) FROM \`$tabla\`")->fetch_row()[0];
+            $conn->query("ALTER TABLE $tabla ENGINE=InnoDB");
+            $despues = (int)$conn->query("SELECT COUNT(*) FROM $tabla")->fetch_row()[0];
             if ($antes !== $despues) throw new RuntimeException('Revisar filas después de la conversión; el respaldo está conservado.');
             $resultado[] = ['tabla'=>$tabla, 'respaldo'=>$respaldo, 'filas'=>$despues];
         } finally {
