@@ -284,53 +284,8 @@ async function modificarStock(id, columnaTienda, cambio) {
     } catch (e) { alert("Error al actualizar stock"); }
 }
 
-async function registrarVenta(idEquipo) {
-    const equipo = equiposInventario.find(e => e.id == idEquipo);
-    
-    const opcion = prompt("¿De qué tienda se realizó la venta?\nEscribe el número:\n1 = CAB 1\n2 = CAB 2\n3 = MODELO");
-    if(!opcion) return; 
-
-    let columnaTiendaDeducir = '';
-    if (opcion === '1') columnaTiendaDeducir = 'stock_cab1';
-    else if (opcion === '2') columnaTiendaDeducir = 'stock_cab2';
-    else if (opcion === '3') columnaTiendaDeducir = 'stock_modelo';
-    else return alert("Opción no válida. Venta cancelada.");
-
-    let stockActual = parseInt(equipo[columnaTiendaDeducir]) || 0;
-
-    if(stockActual <= 0) {
-        if(!confirm("Esa tienda no tiene stock. ¿Registrar venta de todas formas?")) return;
-    }
-
-    const precioVendido = parseFloat(document.getElementById(`precio-${idEquipo}`).value);
-    const costoActual = parseFloat(document.getElementById(`costo-${idEquipo}`).value);
-
-    try {
-        const response = await fetch('api_vender.php', {
-            method: 'POST',
-            body: JSON.stringify({ id: idEquipo, columna: columnaTiendaDeducir })
-        });
-        const resultado = await response.json();
-
-        if(resultado.success) {
-            const gananciaReal = precioVendido - costoActual;
-            ventas.push({
-                Tienda: columnaTiendaDeducir.replace('stock_', '').toUpperCase(), 
-                Marca: equipo.marca, Modelo: equipo.nombre, IMEI: equipo.imei,
-                Precio_Compra: `S/ ${costoActual}`, Precio_Vendido: `S/ ${precioVendido}`,
-                GANANCIA_NETA: `S/ ${gananciaReal}`, Fecha: new Date().toLocaleDateString(), Hora: new Date().toLocaleTimeString()
-            });
-            ingresoTotal += precioVendido;
-            
-            if(document.getElementById('contador')) document.getElementById('contador').innerText = `Ventas: ${ventas.length}`;
-            if(document.getElementById('totalVentas')) document.getElementById('totalVentas').innerText = `Total Ingresos: S/ ${ingresoTotal}`;
-            
-            alert(`✅ Venta registrada.\nGanancia: S/ ${gananciaReal}`);
-            
-            equipo[columnaTiendaDeducir] -= 1; 
-            if (marcaSeleccionada) renderizarModelos(equiposInventario.filter(e => obtenerMarcaPrincipal(e.marca) === marcaSeleccionada));
-        }
-    } catch (error) { console.error(error); }
+function registrarVenta(idEquipo) {
+    window.location.href = 'subir_venta.php?equipo=' + encodeURIComponent(idEquipo);
 }
 
 function filtrarEquipos() {

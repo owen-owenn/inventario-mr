@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS ventas_equipos (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    solicitud CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL UNIQUE,
+    datos_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    equipo_id BIGINT UNSIGNED NOT NULL,
+    marca TEXT NOT NULL,
+    modelo TEXT NOT NULL,
+    imei TEXT NOT NULL,
+    rom TEXT NOT NULL,
+    ram TEXT NOT NULL,
+    tienda VARCHAR(20) NOT NULL,
+    dni CHAR(8) NOT NULL,
+    telefono CHAR(9) NOT NULL,
+    tipo ENUM('contado', 'credito') NOT NULL,
+    financiera VARCHAR(100) NOT NULL DEFAULT '',
+    precio_centimos BIGINT UNSIGNED NOT NULL,
+    inicial_centimos BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    descuento_centimos BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    total_centimos BIGINT UNSIGNED NOT NULL,
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX ventas_equipo (equipo_id),
+    INDEX ventas_fecha (creado_en)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

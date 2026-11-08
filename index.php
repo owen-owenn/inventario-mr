@@ -45,7 +45,10 @@ if (!isset($_SESSION['acceso_concedido']) || $_SESSION['acceso_concedido'] !== t
         <?php if($error != "") echo "<div class='error'>$error</div>"; ?>
         <form method="POST">
             <input type="password" name="clave" class="login-input" placeholder="Ingresa la contraseña..." required>
-            <button type="submit" class="btn-login">Entrar al Sistema</button>
+            <div style="display:flex; gap:10px; align-items:stretch;">
+                <button type="submit" class="btn-login" style="flex:1;">Entrar al Sistema</button>
+                <a href="subir_venta.php" class="btn-login" style="flex:1; background:#198754; text-decoration:none; display:flex; align-items:center; justify-content:center;">Subir venta</a>
+            </div>
         </form>
     </div>
 </body>
@@ -92,6 +95,7 @@ if (!isset($_SESSION['acceso_concedido']) || $_SESSION['acceso_concedido'] !== t
     <div class="app-container">
         <!-- 🚪 BOTÓN DE CERRAR SESIÓN -->
         <div style="text-align: right; margin-bottom: -15px; margin-top: 10px;">
+            <a href="subir_venta.php" style="display:inline-block;background:#198754;color:white;padding:10px 15px;border-radius:8px;text-decoration:none;margin:0 8px 8px 0;font-weight:bold;">Subir venta</a>
             <a href="?salir=true" style="background: #d63031; color: white; padding: 10px 15px; text-decoration: none; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; transition: 0.3s;">🚪 Cerrar Sesión</a>
         </div>
 

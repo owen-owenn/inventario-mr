@@ -1,0 +1,51 @@
+name: Verificar ventas
+on:
+  push:
+    paths:
+      - '**.php'
+      - 'js/**'
+      - 'ventas_schema.sql'
+      - 'tests/**'
+      - '.github/workflows/ventas.yml'
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  ventas:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test-only
+          MYSQL_DATABASE: ventas_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -ptest-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Preparar PHP y MySQL
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y php-cli php-mysql
+      - name: Revisar sintaxis
+        run: |
+          find . -name '*.php' -print0 | xargs -0 -n1 php -l
+          node --check js/app.js
+          node --check js/ventas.js
+      - name: Probar ventas en base desechable
+        env:
+          VENTAS_TEST_DB: ventas_test
+        run: python3 tests/ventas_integration.py
+      - name: Preparar navegador de pruebas
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Probar formulario en pantalla móvil
+        run: node tests/ventas_ui.cjs
