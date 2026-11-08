@@ -3,6 +3,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 require_once __DIR__ . '/ventas_validacion.php';
+require_once __DIR__ . '/ventas_almacenamiento.php';
 
 function respuesta_venta(int $estado, array $datos): void {
     http_response_code($estado);
@@ -37,10 +38,9 @@ try {
     if ($tabla->num_rows === 0) {
         $conn->query(file_get_contents(__DIR__ . '/ventas_schema.sql'));
     }
-    $motores = $conn->query("SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES
-        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ('equipos', 'ventas_equipos')")->fetch_all(MYSQLI_ASSOC);
-    if (count($motores) !== 2 || array_filter($motores, fn($t) => strtoupper($t['ENGINE'] ?? '') !== 'INNODB')) {
-        throw new RuntimeException('Las tablas de ventas e inventario deben usar InnoDB.');
+    $motores = ventas_motores($conn);
+    if (($motores['equipos'] ?? '') !== 'INNODB' || ($motores['ventas_equipos'] ?? '') !== 'INNODB') {
+        respuesta_venta(503, ['success'=>false, 'error'=>'El almacenamiento del inventario necesita mantenimiento. No se ha descontado stock; informa al administrador.']);
     }
     $hash = hash('sha256', json_encode($venta, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
     $buscar = $conn->prepare('SELECT id, datos_hash, total_centimos FROM ventas_equipos WHERE solicitud = ?');
@@ -77,7 +77,7 @@ try {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
     $insertar->execute([
         $venta['solicitud'], $hash, $venta['id'], $equipo['marca'] ?? '', $equipo['nombre'] ?? '',
-        $equipo['imei'] ?? '', $equipo['rom'] ?? '', $equipo['ram'] ?? '', $columna,
+        $venta['imei'], $equipo['rom'] ?? '', $equipo['ram'] ?? '', $columna,
         $venta['dni'], $venta['telefono'], $venta['tipo'], $venta['financiera'],
         $venta['precio'], $venta['inicial'], $venta['descuento'], $venta['total']
     ]);

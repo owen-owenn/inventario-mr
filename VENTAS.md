@@ -5,7 +5,7 @@ En el inicio, **Subir venta** está junto al acceso por contraseña. También ap
 1. Cliente: DNI peruano de 8 dígitos y celular peruano de 9 dígitos.
 2. Contado: precio y descuento opcional. Final = precio - descuento.
    Crédito: financiera, precio crédito, inicial y descuento opcional de la inicial. Inicial final = inicial - descuento. No se resta este descuento al precio crédito.
-3. Marca, equipo existente y tienda (CAB 1, CAB 2 o Modelo). Cada envío vende una unidad.
+3. Marca, equipo existente y tienda (QHATU, CAB o Modelo). Cada envío vende una unidad.
 
 El formulario de ventas es accesible desde el inicio sin la contraseña del inventario. No expone un listado de clientes ni ventas. CSRF protege los envíos entre sitios, pero no reemplaza una cuenta de vendedor; quien tenga acceso a esta página puede registrar ventas.
 
@@ -28,3 +28,11 @@ Para ejecutarlo localmente se necesitan PHP con mysqli, Python 3 y MySQL local c
     VENTAS_TEST_DB=ventas_test python3 tests/ventas_integration.py
 
 Si el alojamiento no despliega automáticamente desde main, desplegar el commit completo con todos sus archivos.
+
+## Actualización para Railway
+
+- El modelo se selecciona del catálogo; el IMEI de la unidad vendida se escribe aparte (15 dígitos). Los registros nuevos guardan ese IMEI, sin modificar la ficha del modelo.
+- QHATU corresponde a stock_cab1; CAB corresponde a stock_cab2. Los identificadores de las columnas y sus cantidades no cambian.
+- Dentro del inventario, Reporte de ventas Excel descarga ventas persistidas desde un endpoint que exige la sesión de administrador. Incluye hoja Ventas con autofiltros y hoja Resumen. Las fechas se muestran en hora de Perú; DNI, celular e IMEI se conservan como texto.
+- El diagnóstico del servidor confirmó que equipos era MyISAM. La utilidad administrativa diagnostico_ventas.php exige contraseña y token CSRF para convertir tablas MyISAM a InnoDB. Primero crea un respaldo completo dentro de MySQL, bloquea las escrituras durante la copia y conversión, y verifica la cantidad de filas. No elimina el respaldo. Las ventas normales nunca realizan esta conversión.
+- Las pruebas incluyen una tabla MyISAM original y se ejecutan en MySQL 8 y 9, además de verificar el Excel generado y el formulario móvil.

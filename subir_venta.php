@@ -53,6 +53,7 @@ $solicitud = bin2hex(random_bytes(32));
                 <div class="grid">
                     <label>Marca<select id="marca" required><option value="">Selecciona la marca</option></select></label>
                     <label>Equipo<select id="equipo" name="id" required><option value="">Selecciona primero la marca</option></select></label>
+                    <label>IMEI del equipo vendido<input name="imei" inputmode="numeric" pattern="[0-9]{15}" minlength="15" maxlength="15" placeholder="Ingresa los 15 dígitos del equipo" required></label>
                     <label>Tienda de salida<select id="tienda" name="columna" required><option value="">Selecciona primero el equipo</option></select></label>
                 </div>
                 <p class="ayuda">Cada venta descuenta 1 unidad. Solo puedes vender equipos con stock en la tienda elegida.</p>

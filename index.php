@@ -93,8 +93,9 @@ if (!isset($_SESSION['acceso_concedido']) || $_SESSION['acceso_concedido'] !== t
 </head>
 <body>
     <div class="app-container">
-        <!-- 🚪 BOTÓN DE CERRAR SESIÓN -->
+        <!-- Acciones del inventario -->
         <div style="text-align: right; margin-bottom: -15px; margin-top: 10px;">
+            <button type="button" id="reporte-ventas" onclick="descargarReporte()" style="background:#217346;color:white;padding:10px 15px;border:0;border-radius:8px;font-weight:bold;cursor:pointer;margin:0 8px 8px 0;">📊 Reporte de ventas Excel</button>
             <a href="subir_venta.php" style="display:inline-block;background:#198754;color:white;padding:10px 15px;border-radius:8px;text-decoration:none;margin:0 8px 8px 0;font-weight:bold;">Subir venta</a>
             <a href="?salir=true" style="background: #d63031; color: white; padding: 10px 15px; text-decoration: none; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; transition: 0.3s;">🚪 Cerrar Sesión</a>
         </div>
@@ -160,6 +161,7 @@ if (!isset($_SESSION['acceso_concedido']) || $_SESSION['acceso_concedido'] !== t
         </div>
     </div>
 
+    <script src="js/reporte_ventas.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

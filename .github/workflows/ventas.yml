@@ -13,9 +13,12 @@ permissions:
 jobs:
   ventas:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mysql: ["8.0", "9"]
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:${{ matrix.mysql }}
         env:
           MYSQL_ROOT_PASSWORD: test-only
           MYSQL_DATABASE: ventas_test
@@ -45,7 +48,9 @@ jobs:
         run: python3 tests/ventas_integration.py
       - name: Preparar navegador de pruebas
         run: |
-          npm install --no-save playwright
+          npm install --no-save playwright xlsx-js-style
           npx playwright install --with-deps chromium
       - name: Probar formulario en pantalla móvil
         run: node tests/ventas_ui.cjs
+      - name: Verificar archivo Excel y filtros
+        run: node tests/ventas_excel.cjs

@@ -6,7 +6,7 @@ const marca = document.getElementById('marca');
 const equipo = document.getElementById('equipo');
 const tienda = document.getElementById('tienda');
 const tipo = document.getElementById('tipo');
-const tiendas = {stock_cab1: 'CAB 1', stock_cab2: 'CAB 2', stock_modelo: 'Modelo'};
+const tiendas = {stock_cab1: 'QHATU', stock_cab2: 'CAB', stock_modelo: 'Modelo'};
 let equipos = [];
 let enviando = false;
 const campo = nombre => form.elements.namedItem(nombre);
@@ -26,7 +26,7 @@ function marcaPrincipal(texto) {
 function cambiarMarca(preseleccion = '') {
     opciones(equipo, 'Selecciona el equipo');
     equipos.filter(e => marcaPrincipal(e.marca) === marca.value).forEach(e => {
-        const etiqueta = [e.nombre, e.rom, e.ram, 'IMEI: ' + (e.imei || 'S/N'), '#' + e.id].filter(Boolean).join(' · ');
+        const etiqueta = [e.nombre, e.rom, e.ram, '#' + e.id].filter(Boolean).join(' · ');
         equipo.add(new Option(etiqueta, e.id));
     });
     equipo.value = preseleccion;

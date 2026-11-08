@@ -150,7 +150,7 @@ function renderizarModelos(listaEquipos) {
                 <p style="margin: 0 0 10px 0; font-size: 0.8rem; font-weight: bold; color: #666; text-transform: uppercase; text-align: center;">Stock por Tienda</p>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="font-weight: bold; color: #333; font-size: 0.95rem;">🏢 CAB 1</span>
+                    <span style="font-weight: bold; color: #333; font-size: 0.95rem;">🏢 QHATU</span>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <button onclick="modificarStock('${equipo.id}', 'stock_cab1', -1)" style="color: #e74c3c; width: 28px; height: 28px; border: none; border-radius: 5px; font-weight: bold; cursor:pointer; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">-</button>
                         <span style="font-size: 1rem; font-weight: bold; width: 20px; text-align: center;">${s_cab1}</span>
@@ -159,7 +159,7 @@ function renderizarModelos(listaEquipos) {
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="font-weight: bold; color: #333; font-size: 0.95rem;">🏢 CAB 2</span>
+                    <span style="font-weight: bold; color: #333; font-size: 0.95rem;">🏢 CAB</span>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <button onclick="modificarStock('${equipo.id}', 'stock_cab2', -1)" style="color: #e74c3c; width: 28px; height: 28px; border: none; border-radius: 5px; font-weight: bold; cursor:pointer; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">-</button>
                         <span style="font-size: 1rem; font-weight: bold; width: 20px; text-align: center;">${s_cab2}</span>
@@ -358,13 +358,6 @@ async function guardarNuevoEquipo() {
     } catch (e) { alert("Error al agregar equipo."); }
 }
 
-function descargarReporte() {
-    if (ventas.length === 0) return alert("No hay ventas registradas.");
-    const worksheet = XLSX.utils.json_to_sheet(ventas);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, `Ventas`);
-    XLSX.writeFile(workbook, `Reporte_Ventas.xlsx`);
-}
 
 function descargarInventario() {
     if (equiposInventario.length === 0) return alert("No hay equipos para exportar.");
@@ -379,7 +372,7 @@ function descargarInventario() {
         return 0;
     });
 
-    const encabezados = ["MARCA", "MODELO", "ROM", "RAM", "PRECIO CONTADO", "PRECIO CRÉDITO", "CAB 1", "CAB 2", "MODELO"];
+    const encabezados = ["MARCA", "MODELO", "ROM", "RAM", "PRECIO CONTADO", "PRECIO CRÉDITO", "QHATU", "CAB", "MODELO"];
     let dataExcel = [encabezados];
 
     inventarioOrdenado.forEach(equipo => {

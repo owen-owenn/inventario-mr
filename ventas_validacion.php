@@ -20,6 +20,10 @@ function venta_dinero(array $datos, string $clave, bool $opcional = false): int 
 function validar_venta(array $datos): array {
     $dni = venta_texto($datos, 'dni');
     $telefono = venta_texto($datos, 'telefono');
+    $imei = venta_texto($datos, 'imei');
+    if (!preg_match('/^[0-9]{15}$/D', $imei)) {
+        throw new InvalidArgumentException('El IMEI del equipo vendido debe tener 15 dígitos.');
+    }
     if (!preg_match('/^[0-9]{8}$/D', $dni)) {
         throw new InvalidArgumentException('El DNI debe tener 8 dígitos.');
     }
@@ -67,7 +71,7 @@ function validar_venta(array $datos): array {
     if ($descuento > $base) throw new InvalidArgumentException('El descuento no puede superar el importe.');
     return [
         'solicitud' => $solicitud, 'id' => (int)$id, 'columna' => $columna,
-        'dni' => $dni, 'telefono' => $telefono, 'tipo' => $tipo,
+        'dni' => $dni, 'telefono' => $telefono, 'imei' => $imei, 'tipo' => $tipo,
         'financiera' => $financiera, 'precio' => $precio,
         'inicial' => $inicial, 'descuento' => $descuento, 'total' => $base - $descuento
     ];

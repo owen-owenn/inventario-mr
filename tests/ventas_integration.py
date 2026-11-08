@@ -22,7 +22,7 @@ $conn->set_charset('utf8mb4');
 """
 with tempfile.TemporaryDirectory() as directory:
     target = Path(directory)
-    for name in ["subir_venta.php", "api_vender.php", "ventas_validacion.php", "ventas_schema.sql"]:
+    for name in ["subir_venta.php", "api_vender.php", "ventas_validacion.php", "ventas_schema.sql", "api_ventas.php", "ventas_almacenamiento.php", "diagnostico_ventas.php"]:
         shutil.copy(ROOT / name, target / name)
     (target / "db.php").write_text(DB)
     def sql(statement):
@@ -35,8 +35,15 @@ with tempfile.TemporaryDirectory() as directory:
     sql("""CREATE TABLE equipos (
         id INT PRIMARY KEY, marca VARCHAR(100), nombre VARCHAR(100), imei VARCHAR(30),
         rom VARCHAR(20), ram VARCHAR(20), stock_cab1 INT, stock_cab2 INT, stock_modelo INT
-    ) ENGINE=InnoDB""")
+    ) ENGINE=MyISAM""")
     sql("INSERT INTO equipos VALUES (1,'SAMSUNG','A16','S/N','128GB','4GB',12,2,0)")
+    repair_code = "require " + json.dumps(str(target / "db.php")) + "; require " + json.dumps(str(target / "ventas_almacenamiento.php")) + "; echo json_encode(ventas_reparar_almacenamiento($conn));"
+    repaired = json.loads(subprocess.check_output(["php", "-r", repair_code]))
+    assert repaired[0]["filas"] == 1
+    backup = repaired[0]["respaldo"]
+    assert sql("SELECT * FROM equipos") == sql("SELECT * FROM " + backup)
+    assert sql("SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='equipos'")[0]["ENGINE"] == "InnoDB"
+    assert json.loads(subprocess.check_output(["php", "-r", repair_code])) == []
     server = subprocess.Popen(["php", "-S", "127.0.0.1:8765", "-t", directory],
         env={**os.environ, "PHP_CLI_SERVER_WORKERS": "4"},
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
@@ -51,9 +58,14 @@ with tempfile.TemporaryDirectory() as directory:
                 time.sleep(.1)
         else:
             raise AssertionError("PHP server did not start")
+        try:
+            client.open("http://127.0.0.1:8765/api_ventas.php")
+            raise AssertionError("Sales export must require login")
+        except urllib.error.HTTPError as error:
+            assert error.code == 403
         csrf = re.search(r'name="csrf" value="([^"]+)"', page)[1]
         base = dict(csrf=csrf, solicitud=secrets.token_hex(32), id="1",
-            columna="stock_cab1", dni="00123456", telefono="987654321",
+            columna="stock_cab1", dni="00123456", telefono="987654321", imei="123456789012345",
             tipo="contado", precio_contado="500.50", descuento_contado="20.20")
         cookie = "; ".join(c.name + "=" + c.value for c in jar)
         def post(data):
@@ -72,6 +84,7 @@ with tempfile.TemporaryDirectory() as directory:
         status, result = post(base)
         assert status == 201 and result["total_centimos"] == 48030, (status, result)
         assert count() == 1
+        assert sql("SELECT imei FROM ventas_equipos")[0]["imei"] == "123456789012345"
         assert int(sql("SELECT stock_cab1 FROM equipos")[0]["stock_cab1"]) == 11
         assert post(base)[1]["id"] == result["id"] and count() == 1
         assert post({**base, "precio_contado": "600"})[0] == 409
@@ -80,7 +93,7 @@ with tempfile.TemporaryDirectory() as directory:
         assert post(credit)[1]["total_centimos"] == 9005
         assert post(fresh(descuento_contado=""))[1]["total_centimos"] == 50050
         for changes in [
-            {"dni": "123"}, {"telefono": "123"}, {"precio_contado": "-1"},
+            {"dni": "123"}, {"imei": "123"}, {"telefono": "123"}, {"precio_contado": "-1"},
             {"precio_contado": "0"}, {"descuento_contado": "501"},
             {"precio_contado": "1.001"}, {"precio_contado": "1e2"},
             {"columna": "stock_cab1 = 0"}, {"id": []}, {"tipo": "otro"},
@@ -110,6 +123,12 @@ with tempfile.TemporaryDirectory() as directory:
         assert len({r["id"] for _, r in results}) == 1
         assert int(sql("SELECT stock_cab1 FROM equipos")[0]["stock_cab1"]) == stock_before - 1
         assert count() == 5
+        (target / "__login.php").write_text("<?php session_start(); $_SESSION['acceso_concedido']=true;")
+        client.open("http://127.0.0.1:8765/__login.php").read()
+        exported = json.loads(client.open("http://127.0.0.1:8765/api_ventas.php").read())
+        assert len(exported["ventas"]) == 5
+        assert exported["ventas"][0]["imei"] == "123456789012345"
+        assert exported["ventas"][0]["dni"] == "00123456"
         print("PASS: cash, credit, optional discounts, validation, CSRF, stock, rollback, retries and concurrency")
     finally:
         import signal
