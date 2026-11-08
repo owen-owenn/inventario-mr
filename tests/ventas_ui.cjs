@@ -49,7 +49,7 @@ const assert = require('assert/strict');
  await page.waitForSelector('#nueva:visible');
  assert.equal(requests.length,1);
  assert(!('financiera' in requests[0]));
- assert(await page.locator('#campos').isDisabled());
+ assert(await page.locator('#guardar').isDisabled());
  assert.deepEqual(errors,[]);
  console.log('PASS: responsive layout, brand/model, stock options, cash/credit totals, invalid discount, submit payload and success');
  await browser.close();
