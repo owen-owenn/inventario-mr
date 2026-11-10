@@ -18,6 +18,10 @@ function venta_dinero(array $datos, string $clave, bool $opcional = false): int 
 }
 
 function validar_venta(array $datos): array {
+    $vendedor = venta_texto($datos, 'vendedor');
+    if (!in_array($vendedor, ['Jordy', 'Yeisom', 'Zinedin', 'Adriano', 'Diana', 'Katherine', 'Nicol'], true)) {
+        throw new InvalidArgumentException('Selecciona uno de los vendedores de la lista.');
+    }
     $dni = venta_texto($datos, 'dni');
     $telefono = venta_texto($datos, 'telefono');
     $imei = venta_texto($datos, 'imei');
@@ -72,7 +76,7 @@ function validar_venta(array $datos): array {
     return [
         'solicitud' => $solicitud, 'id' => (int)$id, 'columna' => $columna,
         'dni' => $dni, 'telefono' => $telefono, 'imei' => $imei, 'tipo' => $tipo,
-        'financiera' => $financiera, 'precio' => $precio,
+        'vendedor' => $vendedor, 'financiera' => $financiera, 'precio' => $precio,
         'inicial' => $inicial, 'descuento' => $descuento, 'total' => $base - $descuento
     ];
 }

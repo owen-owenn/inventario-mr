@@ -27,6 +27,19 @@ $solicitud = bin2hex(random_bytes(32));
         <input type="hidden" name="solicitud" value="<?= htmlspecialchars($solicitud, ENT_QUOTES, 'UTF-8') ?>">
         <fieldset id="campos" disabled>
             <section>
+                <h2>Persona que realizó la venta</h2>
+                <label>Vendedor<select name="vendedor" id="vendedor" required>
+                    <option value="">Selecciona al vendedor</option>
+                    <option value="Jordy">Jordy</option>
+                    <option value="Yeisom">Yeisom</option>
+                    <option value="Zinedin">Zinedin</option>
+                    <option value="Adriano">Adriano</option>
+                    <option value="Diana">Diana</option>
+                    <option value="Katherine">Katherine</option>
+                    <option value="Nicol">Nicol</option>
+                </select></label>
+            </section>
+            <section>
                 <h2><span>1</span> Datos del cliente</h2>
                 <div class="grid">
                     <label>DNI<input name="dni" inputmode="numeric" pattern="[0-9]{8}" minlength="8" maxlength="8" placeholder="8 dígitos" required></label>

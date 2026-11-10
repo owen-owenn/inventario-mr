@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS ventas_equipos (
     dni CHAR(8) NOT NULL,
     telefono CHAR(9) NOT NULL,
     tipo ENUM('contado', 'credito') NOT NULL,
+    vendedor VARCHAR(20) NULL DEFAULT NULL,
     financiera VARCHAR(100) NOT NULL DEFAULT '',
     precio_centimos BIGINT UNSIGNED NOT NULL,
     inicial_centimos BIGINT UNSIGNED NOT NULL DEFAULT 0,

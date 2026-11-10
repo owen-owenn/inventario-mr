@@ -8,17 +8,19 @@ if (($_SESSION['acceso_concedido'] ?? false) !== true) {
     exit;
 }
 session_write_close();
+require_once __DIR__ . '/ventas_almacenamiento.php';
 try {
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
     require __DIR__ . '/db.php';
     $conn->set_charset('utf8mb4');
-    // La exportación es de solo lectura. Una instalación sin ventas devuelve una lista vacía.
+    // Actualiza únicamente el esquema antiguo; conserva todos los registros existentes.
+    ventas_asegurar_vendedor($conn);
     $zona = new DateTimeZone('America/Lima');
     // TIMESTAMP se devuelve según la zona de la sesión MySQL.
     // Volver a consultar en UTC para convertir sin depender de la configuración del servidor.
     $conn->query("SET time_zone = '+00:00'");
     $consulta = $conn->query("SELECT id, creado_en, tienda, marca, modelo, imei, rom, ram, dni,
-        telefono, tipo, financiera, precio_centimos, inicial_centimos, descuento_centimos, total_centimos
+        telefono, tipo, financiera, vendedor, precio_centimos, inicial_centimos, descuento_centimos, total_centimos
         FROM ventas_equipos ORDER BY creado_en DESC, id DESC");
     $ventas = $consulta->fetch_all(MYSQLI_ASSOC);
     foreach ($ventas as &$venta) {

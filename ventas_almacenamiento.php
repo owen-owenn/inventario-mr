@@ -32,3 +32,16 @@ function ventas_reparar_almacenamiento(mysqli $conn): array {
     }
     return $resultado;
 }
+
+// Migración aditiva para instalaciones con ventas anteriores, sin asignarles un vendedor inventado.
+// Ejecutar antes de empezar cualquier transacción de venta (ALTER TABLE confirma implícitamente).
+function ventas_asegurar_vendedor(mysqli $conn): void {
+    $columna = $conn->query("SHOW COLUMNS FROM ventas_equipos LIKE 'vendedor'");
+    if ($columna->num_rows > 0) return;
+    try {
+        $conn->query("ALTER TABLE ventas_equipos ADD COLUMN vendedor VARCHAR(20) NULL DEFAULT NULL");
+    } catch (mysqli_sql_exception $error) {
+        // Otra petición pudo completar la misma migración entre la consulta y el ALTER.
+        if ($error->getCode() !== 1060) throw $error;
+    }
+}

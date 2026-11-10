@@ -27,6 +27,9 @@ const assert = require('assert/strict');
  assert.equal(await page.locator('#marca').inputValue(),'SAMSUNG');
  assert.equal(await page.locator('#equipo').inputValue(),'1');
  assert(await page.locator('#tienda option[value=stock_cab2]').isDisabled());
+ assert.deepEqual(await page.locator('#vendedor option').allTextContents(),
+    ['Selecciona al vendedor','Jordy','Yeisom','Zinedin','Adriano','Diana','Katherine','Nicol']);
+ await page.locator('#vendedor').selectOption('Zinedin');
  await page.locator('[name=dni]').fill('00123456');
  await page.locator('[name=telefono]').fill('987654321');
  await page.locator('[name=imei]').fill('123456789012345');
@@ -49,6 +52,7 @@ const assert = require('assert/strict');
  await page.locator('#guardar').click();
  await page.waitForSelector('#nueva:visible');
  assert.equal(requests.length,1);
+ assert.equal(requests[0].vendedor,'Zinedin');
  assert.equal(requests[0].imei,'123456789012345');
  assert.equal(await page.locator('#tienda option[value=stock_cab1]').textContent(),'QHATU · 3 disponibles');
  assert(!('financiera' in requests[0]));

@@ -38,6 +38,7 @@ try {
     if ($tabla->num_rows === 0) {
         $conn->query(file_get_contents(__DIR__ . '/ventas_schema.sql'));
     }
+    ventas_asegurar_vendedor($conn);
     $motores = ventas_motores($conn);
     if (($motores['equipos'] ?? '') !== 'INNODB' || ($motores['ventas_equipos'] ?? '') !== 'INNODB') {
         respuesta_venta(503, ['success'=>false, 'error'=>'El almacenamiento del inventario necesita mantenimiento. No se ha descontado stock; informa al administrador.']);
@@ -73,13 +74,13 @@ try {
     }
     $insertar = $conn->prepare('INSERT INTO ventas_equipos
         (solicitud, datos_hash, equipo_id, marca, modelo, imei, rom, ram, tienda, dni, telefono,
-         tipo, financiera, precio_centimos, inicial_centimos, descuento_centimos, total_centimos)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+         tipo, financiera, precio_centimos, inicial_centimos, descuento_centimos, total_centimos, vendedor)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
     $insertar->execute([
         $venta['solicitud'], $hash, $venta['id'], $equipo['marca'] ?? '', $equipo['nombre'] ?? '',
         $venta['imei'], $equipo['rom'] ?? '', $equipo['ram'] ?? '', $columna,
         $venta['dni'], $venta['telefono'], $venta['tipo'], $venta['financiera'],
-        $venta['precio'], $venta['inicial'], $venta['descuento'], $venta['total']
+        $venta['precio'], $venta['inicial'], $venta['descuento'], $venta['total'], $venta['vendedor']
     ]);
     $id_venta = $conn->insert_id;
     $descontar = $conn->prepare("UPDATE equipos SET $columna = $columna - 1 WHERE id = ? AND $columna > 0");

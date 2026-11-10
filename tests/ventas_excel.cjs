@@ -5,17 +5,21 @@ vm.createContext(context);
 vm.runInContext(fs.readFileSync(require('path').join(__dirname,'../js/reporte_ventas.js'),'utf8'),context);
 const base = {id:1,creado_en:'2026-11-08 16:05:10',tienda:'stock_cab1',marca:'SAMSUNG',modelo:'A16',
     rom:'128GB',ram:'4GB',imei:'001234567890123',dni:'00123456',telefono:'987654321',
-    tipo:'contado',financiera:'',precio_centimos:50050,inicial_centimos:0,descuento_centimos:2020,total_centimos:48030};
-const rows = [base,{...base,id:2,tienda:'stock_cab2',tipo:'credito',financiera:'PayJoy',
+    vendedor:'Zinedin',tipo:'contado',financiera:'',precio_centimos:50050,inicial_centimos:0,descuento_centimos:2020,total_centimos:48030};
+const rows = [base,{...base,vendedor:null,id:2,tienda:'stock_cab2',tipo:'credito',financiera:'PayJoy',
     precio_centimos:90000,inicial_centimos:10010,descuento_centimos:1005,total_centimos:9005}];
 const workbook = context.crearLibroVentas(rows);
 const buffer = XLSX.write(workbook,{type:'buffer',bookType:'xlsx'});
 const restored = XLSX.read(buffer,{type:'buffer',cellNF:true});
 const sheet = restored.Sheets.Ventas;
-assert.equal(sheet['!autofilter'].ref,'A1:T3');
+assert.equal(sheet['!autofilter'].ref,'A1:U3');
 assert.equal(sheet.I2.v,'001234567890123');
 assert.equal(sheet.J2.v,'00123456');
 assert.equal(sheet.I2.t,'s');
+assert.equal(sheet.U1.v,'Vendedor');
+assert.equal(sheet.U2.v,'Zinedin');
+assert.equal(sheet.U3.v,'No registrado');
+assert.equal(sheet.U2.t,'s');
 assert.equal(sheet.D2.v,'QHATU');
 assert.equal(sheet.D3.v,'CAB');
 assert.equal(sheet.P2.v,480.30);

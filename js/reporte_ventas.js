@@ -4,7 +4,7 @@ function crearLibroVentas(ventas) {
     const encabezados = ['N° venta','Fecha (Perú)','Hora (Perú)','Tienda','Marca','Modelo','ROM','RAM',
         'IMEI vendido','DNI cliente','Teléfono cliente','Tipo de venta','Financiera',
         'Precio contado (S/)','Descuento contado (S/)','Total contado (S/)',
-        'Precio crédito (S/)','Inicial (S/)','Descuento inicial (S/)','Inicial final (S/)'];
+        'Precio crédito (S/)','Inicial (S/)','Descuento inicial (S/)','Inicial final (S/)','Vendedor'];
     const filas = ventas.map(v => {
         const contado = v.tipo === 'contado';
         const [fecha, hora] = v.creado_en.split(' ');
@@ -19,23 +19,23 @@ function crearLibroVentas(ventas) {
             contado ? null : Number(v.precio_centimos)/100,
             contado ? null : Number(v.inicial_centimos)/100,
             contado ? null : Number(v.descuento_centimos)/100,
-            contado ? null : Number(v.total_centimos)/100];
+            contado ? null : Number(v.total_centimos)/100, v.vendedor || 'No registrado'];
     });
     const ws = XLSX.utils.aoa_to_sheet([encabezados, ...filas]);
-    ws['!autofilter'] = {ref: 'A1:T' + (filas.length + 1)};
-    ws['!cols'] = [12,15,14,16,18,28,14,14,23,17,20,18,22,...Array(7).fill(25)].map(wch=>({wch}));
+    ws['!autofilter'] = {ref: 'A1:U' + (filas.length + 1)};
+    ws['!cols'] = [12,15,14,16,18,28,14,14,23,17,20,18,22,...Array(7).fill(25),20].map(wch=>({wch}));
     const headerStyle = {font:{bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'004A99'}},
         alignment:{vertical:'center',wrapText:true}};
     ws['!rows'] = [{hpt:32}];
     encabezados.forEach((_,c)=>{ws[XLSX.utils.encode_cell({r:0,c})].s=headerStyle;});
     filas.forEach((_,r)=>{
-        for(let c=0;c<20;c++){
+        for(let c=0;c<21;c++){
             const celda=ws[XLSX.utils.encode_cell({r:r+1,c})];
             if(!celda) continue;
             celda.s={fill:{fgColor:{rgb:r%2 ? 'FFFFFF':'EFF5FB'}},alignment:{vertical:'center'}};
             if(c===1) celda.z='dd/mm/yyyy';
             if(c>=8 && c<=10) celda.z='@';
-            if(c>=13) celda.z='"S/ "#,##0.00';
+            if(c>=13 && c<=19) celda.z='"S/ "#,##0.00';
         }
     });
     const contar = ventas.length;
@@ -50,7 +50,7 @@ function crearLibroVentas(ventas) {
         ['Descuentos al contado (S/)',sumar(14)],
         ['Descuentos de inicial (S/)',sumar(18)],
         ['Zona horaria','Perú (America/Lima)'],
-        ['Uso','Filtra la hoja Ventas por fecha, tienda, marca, tipo o financiera.'],
+        ['Uso','Filtra la hoja Ventas por fecha, tienda, marca, tipo, financiera o vendedor.'],
         ['Nota','El precio crédito no equivale al dinero cobrado al registrar la venta.']
     ]);
     resumen['!cols']=[{wch:49},{wch:77}];

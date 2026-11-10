@@ -66,7 +66,7 @@ with tempfile.TemporaryDirectory() as directory:
         csrf = re.search(r'name="csrf" value="([^"]+)"', page)[1]
         base = dict(csrf=csrf, solicitud=secrets.token_hex(32), id="1",
             columna="stock_cab1", dni="00123456", telefono="987654321", imei="123456789012345",
-            tipo="contado", precio_contado="500.50", descuento_contado="20.20")
+            vendedor="Zinedin", tipo="contado", precio_contado="500.50", descuento_contado="20.20")
         cookie = "; ".join(c.name + "=" + c.value for c in jar)
         def post(data):
             request = urllib.request.Request("http://127.0.0.1:8765/api_vender.php",
@@ -84,6 +84,7 @@ with tempfile.TemporaryDirectory() as directory:
         status, result = post(base)
         assert status == 201 and result["total_centimos"] == 48030, (status, result)
         assert count() == 1
+        assert sql("SELECT vendedor FROM ventas_equipos")[0]["vendedor"] == "Zinedin"
         assert sql("SELECT imei FROM ventas_equipos")[0]["imei"] == "123456789012345"
         assert int(sql("SELECT stock_cab1 FROM equipos")[0]["stock_cab1"]) == 11
         assert post(base)[1]["id"] == result["id"] and count() == 1
@@ -93,7 +94,7 @@ with tempfile.TemporaryDirectory() as directory:
         assert post(credit)[1]["total_centimos"] == 9005
         assert post(fresh(descuento_contado=""))[1]["total_centimos"] == 50050
         for changes in [
-            {"dni": "123"}, {"imei": "123"}, {"telefono": "123"}, {"precio_contado": "-1"},
+            {"vendedor": ""}, {"vendedor": "Otro"}, {"vendedor": ["Jordy"]}, {"dni": "123"}, {"imei": "123"}, {"telefono": "123"}, {"precio_contado": "-1"},
             {"precio_contado": "0"}, {"descuento_contado": "501"},
             {"precio_contado": "1.001"}, {"precio_contado": "1e2"},
             {"columna": "stock_cab1 = 0"}, {"id": []}, {"tipo": "otro"},
@@ -129,6 +130,15 @@ with tempfile.TemporaryDirectory() as directory:
         assert len(exported["ventas"]) == 5
         assert exported["ventas"][0]["imei"] == "123456789012345"
         assert exported["ventas"][0]["dni"] == "00123456"
+        assert exported["ventas"][0]["vendedor"] == "Zinedin"
+        # Simular una instalación con ventas previas y sin la nueva columna.
+        sql("ALTER TABLE ventas_equipos DROP COLUMN vendedor")
+        legacy = json.loads(client.open("http://127.0.0.1:8765/api_ventas.php").read())
+        assert len(legacy["ventas"]) == 5 and all(v["vendedor"] is None for v in legacy["ventas"])
+        assert post(fresh(vendedor="Nicol"))[0] == 201
+        assert count() == 6
+        current = json.loads(client.open("http://127.0.0.1:8765/api_ventas.php").read())
+        assert current["ventas"][0]["vendedor"] == "Nicol"
         print("PASS: cash, credit, optional discounts, validation, CSRF, stock, rollback, retries and concurrency")
     finally:
         import signal
